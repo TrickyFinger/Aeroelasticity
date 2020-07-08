@@ -31,7 +31,7 @@ freq_bending = eig_freq(1);
 freq_torsion = eig_freq(4);
 
 %% Static model divergence speed
-% flow = getFlowParameters;
+flow = getFlowParameters;
 % q_div = TS.K_theta / (TS.e * TS.c * flow.C_L_alpha * TS.S);
 % speed_div = sqrt(2*q_div/flow.rho);
 % 
@@ -79,25 +79,26 @@ freq_torsion = eig_freq(4);
 Ka = [0                 -flow.C_L_alpha;
       0    (0.5 + TS.a) * TS.b * TS.S * flow.C_L_alpha];
 i = 1;
-for q = 0:0.5:50
+syms p
+for q = 10:0.5:50
     v = sqrt(2*q/flow.rho);
     
     % Aerodynamic damping matrix
     Ca = (q/v).*[-TS.S * flow.C_L_alpha             -TS.S * TS.b * (pi+2*pi*(0.5-TS.a));
               0.5 * TS.b * TS.S * flow.C_L_alpha                   0                ];
-    p = sym('p');
-    poly = det(Ms.*(p*p) - Ca.*p + (Ks-Ka));
+    Matrix = Ms*(p^2) - Ca*p + (Ks-Ka);
+    poly = det(Matrix);
     coeffs = double(coeffs(poly));
     a4 = coeffs(1);
     a3 = coeffs(2);
     a2 = coeffs(3);
     a1 = coeffs(4);
     a0 = coeffs(5);
-    p(i, :) = roots([a4 a3 a2 a1 a0]);
+    p_res(i, :) = roots([a4 a3 a2 a1 a0]);
     for j = 1:4
-        if imag(p(i, j)) >= 0
-            p_real(i, j) = real(p(i, j));
-            p_imag(i, j) = imag(p(i, j));
+        if imag(p_res(i, j)) >= 0
+            p_real(i, j) = real(p_res(i, j));
+            p_imag(i, j) = imag(p_res(i, j));
         else
             p_real(i, j) = 0;
             p_imag(i, j) = 0;
