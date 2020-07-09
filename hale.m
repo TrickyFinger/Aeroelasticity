@@ -72,54 +72,61 @@ flow = getFlowParameters;
 % a0 = TS.K_h * (TS.K_theta - TS.e*TS.c*q*TS.S*flow.C_L_alpha);
 % a1 = 
 % a2 = TS.m * TS.K_theta + TS.I_theta * TS.K_h ...
-%     - (2*TS.m*TS.e*TS.c+TS.S_theta) * q * TS.S * flow.C_L_alpha;
+%      - (2*TS.m*TS.e*TS.c+TS.S_theta) * q * TS.S * flow.C_L_alpha;
 % a4 = TS.m * TS.I_theta - TS.S_theta^2;
 % p(i, :) = roots([a4 0 a2 0 a0]);
+
+% Simplified Theodorsen model
 % Aerodynamic stiffness matrix
-Ka = [0                 -flow.C_L_alpha;
-      0    (0.5 + TS.a) * TS.b * TS.S * flow.C_L_alpha];
-i = 1;
-syms p
-for q = 10:0.5:50
-    v = sqrt(2*q/flow.rho);
-    
-    % Aerodynamic damping matrix
-    Ca = (q/v).*[-TS.S * flow.C_L_alpha             -TS.S * TS.b * (pi+2*pi*(0.5-TS.a));
-              0.5 * TS.b * TS.S * flow.C_L_alpha                   0                ];
-    Matrix = Ms*(p^2) - Ca*p + (Ks-Ka);
-    poly = det(Matrix);
-    coeffs = double(coeffs(poly));
-    a4 = coeffs(1);
-    a3 = coeffs(2);
-    a2 = coeffs(3);
-    a1 = coeffs(4);
-    a0 = coeffs(5);
-    p_res(i, :) = roots([a4 a3 a2 a1 a0]);
-    for j = 1:4
-        if imag(p_res(i, j)) >= 0
-            p_real(i, j) = real(p_res(i, j));
-            p_imag(i, j) = imag(p_res(i, j));
-        else
-            p_real(i, j) = 0;
-            p_imag(i, j) = 0;
-        end
-    end
-    i = i + 1;
-end
-figure(3)
-hold on
-plot((0:0.5:50), p_real(:, 1));
-plot((0:0.5:50), p_real(:, 2));
-plot((0:0.5:50), p_real(:, 3));
-plot((0:0.5:50), p_real(:, 4));
-hold off
-figure(4)
-hold on
-plot((0:0.5:50), p_imag(:, 1));
-plot((0:0.5:50), p_imag(:, 2));
-plot((0:0.5:50), p_imag(:, 3));
-plot((0:0.5:50), p_imag(:, 4));
-hold off
+% Ka = [0                 -flow.C_L_alpha;
+%       0    (0.5 + TS.a) * TS.b * TS.S * flow.C_L_alpha];
+% i = 1;
+% p = sym('p');
+% for q = 1:0.5:50
+%     v = sqrt(2*q/flow.rho);
+%     
+%     % Aerodynamic damping matrix
+%     Ca = (q/v).*[-TS.S * flow.C_L_alpha             -TS.S * TS.b * (pi+2*pi*(0.5-TS.a));
+%               0.5 * TS.b * TS.S * flow.C_L_alpha                   0                ]; 
+%     poly = det(Ms.*(p*p) - Ca.*p + (Ks-Ka));
+%     coeffs = double(coeffs(poly));
+%     a4 = TS.I_theta * TS.m - TS.S_theta^2;
+%     a3 = (TS.I_theta - 0.5 * TS.S_theta * TS.b) * flow.C_L_alpha * TS.S * q/v;
+%     a2 = TS.I_theta * TS.K_h + TS.K_theta * TS.m ...
+%          + (2*PI^2*S^2*b^2*q^2)/v^2 ...
+%          - q * TS.S * flow.C_L_alpha * (TS.S_theta - 0.5*TS.b*TS.m);
+%     a1 = q / v * TS.S * flow.C_L_alpha * TS.K_theta;
+%     a0 = TS.K_h * (TS.K_theta - q * 0.5 * flow.C_L_alpha * TS.S * TS.b);
+%     p_res(i, :) = roots([a4 a3 a2 a1 a0]);
+%     for j = 1:4
+%         if imag(p_res(i, j)) >= 0
+%             p_real(i, j) = real(p_res(i, j));
+%             p_imag(i, j) = imag(p_res(i, j));
+%         else
+%             p_real(i, j) = 0;
+%             p_imag(i, j) = 0;
+%         end
+%     end
+%     i = i + 1;
+% end
+% figure(3)
+% hold on
+% plot((0:0.5:50), p_real(:, 1));
+% plot((0:0.5:50), p_real(:, 2));
+% plot((0:0.5:50), p_real(:, 3));
+% plot((0:0.5:50), p_real(:, 4));
+% hold off
+% figure(4)
+% hold on
+% plot((0:0.5:50), p_imag(:, 1));
+% plot((0:0.5:50), p_imag(:, 2));
+% plot((0:0.5:50), p_imag(:, 3));
+% plot((0:0.5:50), p_imag(:, 4));
+% hold off
+
+%% Fully unsteady aerodynamic model
+
+
 
 function TS = getTypicalSectionParam(ts_frac)
 %% Mass parameters (per unit span)
