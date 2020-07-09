@@ -32,6 +32,7 @@ freq_torsion = eig_freq(4);
 
 %% Static model divergence speed
 flow = getFlowParameters;
+
 % q_div = TS.K_theta / (TS.e * TS.c * flow.C_L_alpha * TS.S);
 % speed_div = sqrt(2*q_div/flow.rho);
 % 
@@ -126,6 +127,51 @@ flow = getFlowParameters;
 
 %% Fully unsteady aerodynamic model
 
+
+
+q_div = TS.K_theta / (TS.e * TS.c * flow.C_L_alpha * TS.S);
+speed_div = sqrt(2*q_div/flow.rho);
+
+i = 1;
+for q = 0:0.5:50
+    a0 = TS.K_h * (TS.K_theta - TS.e*TS.c*q*TS.S*flow.C_L_alpha);
+    a2 = TS.m * TS.K_theta + TS.I_theta * TS.K_h ... 
+         - (2*TS.m*TS.e*TS.c+TS.S_theta) * q * TS.S * flow.C_L_alpha;
+    a4 = TS.m * TS.I_theta - TS.S_theta^2;
+    p(i, :) = roots([a4 0 a2 0 a0]);
+    for j = 1:4
+        if imag(p(i, j)) >= 0
+            p_real(i, j) = real(p(i, j));
+            p_imag(i, j) = imag(p(i, j));
+        else
+            p_real(i, j) = 0;
+            p_imag(i, j) = 0;
+        end
+    end
+    i = i + 1;
+end
+figure(1)
+hold on
+plot((0:0.5:50), p_real(:, 1));
+plot((0:0.5:50), p_real(:, 2));
+plot((0:0.5:50), p_real(:, 3));
+plot((0:0.5:50), p_real(:, 4));
+hold off
+figure(2)
+hold on
+plot((0:0.5:50), p_imag(:, 1));
+plot((0:0.5:50), p_imag(:, 2));
+plot((0:0.5:50), p_imag(:, 3));
+plot((0:0.5:50), p_imag(:, 4));
+hold off
+
+%% Quasi-steady model flutter
+a0 = TS.K_h * (TS.K_theta - TS.e*TS.c*q*TS.S*flow.C_L_alpha);
+a1 = 
+a2 = TS.m * TS.K_theta + TS.I_theta * TS.K_h ...
+    - (2*TS.m*TS.e*TS.c+TS.S_theta) * q * TS.S * flow.C_L_alpha;
+a4 = TS.m * TS.I_theta - TS.S_theta^2;
+p(i, :) = roots([a4 0 a2 0 a0]);
 
 
 function TS = getTypicalSectionParam(ts_frac)
